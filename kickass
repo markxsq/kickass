@@ -1,22 +1,18 @@
 #!/bin/bash
-while true;
-do
-	maclist=(`iw dev wlan0 station dump | grep "Station" | cut -f 2 -s -d " "`)
-	rxlist=(`iw dev wlan0 station dump | grep "signal:" | cut -f 3 -s -d " "`)
-	#maclist=(`iwinfo wlan0 assoclist | grep "dBm" | cut -f 1 -s -d " "`)
-	#rxlist=(`iwinfo wlan0 assoclist | grep "dBm" | cut -f 3 -s -d " "`)
-	rxref="-80"  #threshold
+	maclist=(`iw dev wlan0-1 station dump | grep "Station" | cut -f 2 -s -d " "`)
+	rxlist=(`iw dev wlan0-1 station dump | grep "signal:" | cut -f 3 -s -d " "`)
+	#maclist=(`iwinfo wlan0-1 assoclist | grep "dBm" | cut -f 1 -s -d " "`)
+	#rxlist=(`iwinfo wlan0-1 assoclist | grep "dBm" | cut -f 3 -s -d " "`)
+	rxref="-75"  #threshold
 	len=${#maclist[@]}
 	for((i=0;i<$len;i++))
 	do
 		mac=${maclist[$i]}
 		rx=${rxlist[$i]}
-        # here, use string comparation, simple but error prone
+	        # here, use string comparation, simple but error prone
 		if [[ "$rx" > "$rxref" ]]; then
-			#echo $mac $rx
-			ubus call hostapd.wlan0 del_client '{"addr":"'"$mac"'", "reason": 5, "deauth": True, "ban_time": 3000}'
-			#ubus call hostapd.wlan0 list_bans
+			echo $mac $rx
+			ubus call hostapd.wlan0-1 del_client '{"addr":"'"$mac"'", "reason": 5, "deauth": True, "ban_time": 2000}'
+			#ubus call hostapd.wlan0-1 list_bans
 		fi
 	done
-	sleep 1
-done
